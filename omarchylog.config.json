@@ -1,0 +1,15 @@
+{
+  "title": "OmarchyLog",
+  "sources": [
+    { "repo": "omacom/omarchy", "ref": "dev", "channel": "Development" },
+    { "repo": "omacom/omarchy", "ref": "rc", "channel": "Release candidate" },
+    { "repo": "omacom/omarchy", "ref": "quattro", "channel": "Quattro branch" }
+  ],
+  "releases": ["omacom/omarchy"],
+  "maxPages": 100,
+  "maxCommits": 200,
+  "skipLabels": ["skip-changelog"],
+  "internalPrefixes": [".github/", "test/", "tests/"],
+  "summarizer": null,
+  "maxItems": 8
+}

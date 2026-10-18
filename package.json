@@ -1,0 +1,10 @@
+{
+  "name": "omarchylog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "An evidence-backed, independent changelog observer for Omarchy",
+  "engines": { "node": ">=24" },
+  "bin": { "omarchylog": "src/cli.mjs" },
+  "scripts": { "test": "node --test", "start": "node src/cli.mjs", "check": "node scripts/check.mjs" }
+}

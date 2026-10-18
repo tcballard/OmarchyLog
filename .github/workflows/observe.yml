@@ -1,0 +1,68 @@
+name: Observe Omarchy
+on:
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: Record the starting point without importing history (first run only)
+        type: boolean
+        default: false
+  schedule:
+    - cron: '7,37 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: omarchylog-observer
+  cancel-in-progress: false
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Load durable observer state
+        run: |
+          mkdir -p .omarchylog
+          if git show-ref --verify --quiet refs/remotes/origin/observer-state; then
+            git show origin/observer-state:state.sqlite > .omarchylog/state.sqlite
+          fi
+      - name: Baseline or collect and draft
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FIRST_RUN: ${{ inputs.baseline }}
+        run: |
+          if [ "$FIRST_RUN" = "true" ] || [ ! -s .omarchylog/state.sqlite ]; then
+            node src/cli.mjs baseline
+          else
+            node scripts/poll.mjs
+          fi
+      - name: Save observer state
+        if: always()
+        run: |
+          if [ ! -f .omarchylog/state.sqlite ]; then exit 0; fi
+          node --input-type=module -e 'import {DatabaseSync} from "node:sqlite"; const db=new DatabaseSync(".omarchylog/state.sqlite"); db.exec("PRAGMA wal_checkpoint(TRUNCATE)"); db.close();'
+          if git show-ref --verify --quiet refs/remotes/origin/observer-state; then
+            git worktree add /tmp/omarchylog-state origin/observer-state
+          else
+            git worktree add --detach /tmp/omarchylog-state
+            git -C /tmp/omarchylog-state checkout --orphan observer-state
+            git -C /tmp/omarchylog-state rm -rf .
+          fi
+          cp .omarchylog/state.sqlite /tmp/omarchylog-state/state.sqlite
+          git -C /tmp/omarchylog-state config user.name omarchylog-bot
+          git -C /tmp/omarchylog-state config user.email omarchylog-bot@users.noreply.github.com
+          git -C /tmp/omarchylog-state add state.sqlite
+          if ! git -C /tmp/omarchylog-state diff --cached --quiet; then
+            git -C /tmp/omarchylog-state commit -m 'Update observation archive'
+            git -C /tmp/omarchylog-state push origin HEAD:observer-state
+          fi
+      - name: Export drafts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omarchylog-drafts
+          path: .omarchylog/output/
+          if-no-files-found: ignore

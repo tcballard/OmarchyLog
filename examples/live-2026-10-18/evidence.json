@@ -1,0 +1,132 @@
+[
+  {
+    "id": "041a1c25bbf05388eb3a7ba7299ba3f1a5c1f254e0a938a606daf9a4d2c91acb",
+    "repo": "omacom/omarchy",
+    "ref": "dev",
+    "channel": "Development",
+    "availability": "branch",
+    "base": "ce9b70988ad282c68715ef03f188ad29de182544",
+    "head": "1801adc1983b06f6ab218f8060e430cb3477d8d0",
+    "pr": {
+      "number": 5640,
+      "title": "FIx for #5601: Fix JetBrains focus loss and Waybar freeze on side panel hover (restore missing no_initial_focus)",
+      "body": "\r\nPR https://github.com/basecamp/omarchy/pull/5239 partially reverted https://github.com/basecamp/omarchy/pull/5183 by restoring no_follow_mouse for JetBrains windows.\r\nHowever, it omitted a second rule that was part of the original config: no_initial_focus for floating internal popup windows.\r\n\r\nWhen hovering over IDE side panel buttons (Project, Run, Git, etc.), JetBrains creates floating popup windows with titles like win0, win1, etc.\r\nWithout no_initial_focus, Hyprland gives these popups keyboard focus the moment they appear.\r\nThis causes:\r\n\r\nThe IDE loses focus on hover\r\nThe popup closes immediately and focus cycles back\r\n3.his repeats rapidly for every pixel of mouse movement → a flood of activewindow IPC events\r\nWaybar receives the event flood and freezes\r\nThe original config (before https://github.com/basecamp/omarchy/pull/5183) had both rules. https://github.com/basecamp/omarchy/pull/5239 only restored one.\r\n\r\nConfirmed on: JetBrains IDEs with native Wayland support (2026.1+), Hyprland 0.54.x\r\n\r\nFix\r\nAdd missing rule to File: default/hypr/apps/jetbrains.conf\r\n\r\nwindowrule {\r\nname = jetbrains-tooltip\r\nno_initial_focus = on +\r\nmatch:class = ^(jetbrains-.)$\r\nmatch:title = ^(win.)$\r\nmatch:float = 1\r\n}",
+      "labels": [
+        "bug",
+        "verified",
+        "ready"
+      ],
+      "url": "https://github.com/omacom/omarchy/pull/5640",
+      "mergedAt": "2026-09-28T10:05:13Z",
+      "mergeSha": "1801adc1983b06f6ab218f8060e430cb3477d8d0"
+    },
+    "commits": [
+      {
+        "sha": "1801adc1983b06f6ab218f8060e430cb3477d8d0",
+        "title": " Prevent floating popup windows (tooltips, panel previews) from stealing focus on hover (see https://github.com/basecamp/omarchy/issues/5601) (#5640)",
+        "message": " Prevent floating popup windows (tooltips, panel previews) from stealing focus on hover (see https://github.com/basecamp/omarchy/issues/5601) (#5640)\n\nCo-authored-by: Omarchybot <omabot@omarchy.org>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+        "author": "MedvedevOO",
+        "date": "2026-09-28T10:05:12Z",
+        "url": "https://github.com/omacom/omarchy/commit/1801adc1983b06f6ab218f8060e430cb3477d8d0",
+        "files": [
+          {
+            "path": "default/hypr/apps/jetbrains.lua",
+            "status": "modified",
+            "additions": 3,
+            "deletions": 0,
+            "patch": "@@ -1,2 +1,5 @@\n -- Disable mouse focus (see https://github.com/basecamp/omarchy/pull/5183#issuecomment-4189299971).\n o.window(\"^(jetbrains-.*)$\", { no_follow_mouse = true })\n+\n+-- Keep XWayland popups from stealing focus on hover (see https://github.com/basecamp/omarchy/issues/5601).\n+o.window({ class = \"^(jetbrains-.*)$\", title = \"^(win.*)$\", xwayland = true, float = true }, { no_initial_focus = true })"
+          }
+        ]
+      }
+    ],
+    "title": "FIx for #5601: Fix JetBrains focus loss and Waybar freeze on side panel hover (restore missing no_initial_focus)",
+    "url": "https://github.com/omacom/omarchy/pull/5640",
+    "compareUrl": "https://github.com/omacom/omarchy/compare/ce9b70988ad282c68715ef03f188ad29de182544...1801adc1983b06f6ab218f8060e430cb3477d8d0",
+    "date": "2026-09-28T10:05:12Z"
+  },
+  {
+    "id": "6ef8ae1688718ebbe7db7d59451c92a1b62b581b766bf68999f19aec1689e17e",
+    "repo": "omacom/omarchy",
+    "ref": "dev",
+    "channel": "Development",
+    "availability": "branch",
+    "base": "ce9b70988ad282c68715ef03f188ad29de182544",
+    "head": "1801adc1983b06f6ab218f8060e430cb3477d8d0",
+    "pr": {
+      "number": 5058,
+      "title": "Persist update log across reboots",
+      "body": "When the update includes a kernel upgrade, `omarchy-update-restart` triggers a reboot which wipes `/tmp`. The update log written by `omarchy-update-perform` is lost before the user can review it.\n\nThis moves the log from `/tmp/omarchy-update.log` to `~/.local/state/omarchy/update.log`. That directory already exists and is used for migration state, toggles, and first-run tracking — it follows XDG conventions and survives reboots.\n\nTwo-line change across two files:\n- `bin/omarchy-update-perform` (writes the log)\n- `bin/omarchy-update-analyze-logs` (reads the log)\n\nFixes #4965",
+      "labels": [
+        "bug",
+        "verified",
+        "ready"
+      ],
+      "url": "https://github.com/omacom/omarchy/pull/5058",
+      "mergedAt": "2026-09-28T08:29:07Z",
+      "mergeSha": "6250d9ae635244cfc64a78c8fd80707c902cfa42"
+    },
+    "commits": [
+      {
+        "sha": "6250d9ae635244cfc64a78c8fd80707c902cfa42",
+        "title": "Persist update log across reboots (#5058)",
+        "message": "Persist update log across reboots (#5058)\n\n* Persist update log across reboots\n\nMove the update log from /tmp/omarchy-update.log to\n~/.local/state/omarchy/update.log so it survives the reboot\ntriggered by kernel upgrades. The state directory already exists\nand is used for migrations, toggles, and first-run tracking.\n\nFixes #4965\n\n* Write the update transcript to the persistent path too\n\nOn dev the transcript is written by script(1) in omarchy-update, not by omarchy-update-perform, so the reader alone had moved: omarchy-update-analyze-logs would grep a file nothing wrote and the initramfs warning would never fire. Point the writer at the same path, creating the directory so script cannot fail to open it.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* Read the /tmp transcript during the update that installs this\n\nomarchy-update picks its transcript path before omarchy-update-git pulls, so the update that brings this change in is still logged to /tmp while the new analyzer looks in ~/.local/state and misses a failed initramfs rebuild. Fall back to the /tmp transcript when it is the newer of the two.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nCo-Authored-By: Codex Medium <noreply@openai.com>\n\n---------\n\nCo-authored-by: riftzen-bit <binb53339@gmail.com>\nCo-authored-by: Omarchybot <omabot@omarchy.org>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>\nCo-authored-by: Codex Medium <noreply@openai.com>",
+        "author": "ryan-mt",
+        "date": "2026-09-28T08:29:07Z",
+        "url": "https://github.com/omacom/omarchy/commit/6250d9ae635244cfc64a78c8fd80707c902cfa42",
+        "files": [
+          {
+            "path": "bin/omarchy-update",
+            "status": "modified",
+            "additions": 2,
+            "deletions": 1,
+            "patch": "@@ -11,7 +11,8 @@ set -e\n # while still logging the full session for later analysis.\n if [[ -z $OMARCHY_UPDATE_LOGGED ]]; then\n   script_command=$(printf '%q ' \"$0\" \"$@\")\n-  exec env OMARCHY_UPDATE_LOGGED=1 script -qefc \"$script_command\" \"/tmp/omarchy-update.log\"\n+  mkdir -p \"$HOME/.local/state/omarchy\"\n+  exec env OMARCHY_UPDATE_LOGGED=1 script -qefc \"$script_command\" \"$HOME/.local/state/omarchy/update.log\"\n fi\n \n trap 'echo \"\"; echo -e \"\\033[0;31mSomething went wrong during the update!\\n\\nPlease review the output above carefully, correct the error, and retry the update.\\n\\nIf you need assistance, get help from the community at https://omarchy.org/discord\\033[0m\"' ERR"
+          },
+          {
+            "path": "bin/omarchy-update-analyze-logs",
+            "status": "modified",
+            "additions": 4,
+            "deletions": 1,
+            "patch": "@@ -2,7 +2,10 @@\n \n # omarchy:summary=Check the update log for known failure conditions\n \n-update_log=\"/tmp/omarchy-update.log\"\n+update_log=\"$HOME/.local/state/omarchy/update.log\"\n+\n+# The update that installs this is still being logged by the previous omarchy-update, to /tmp\n+[[ /tmp/omarchy-update.log -nt $update_log ]] && update_log=\"/tmp/omarchy-update.log\"\n \n # Check for initramfs generation failure\n if grep -q \"Updating linux initcpios\" \"$update_log\"; then"
+          }
+        ]
+      }
+    ],
+    "title": "Persist update log across reboots",
+    "url": "https://github.com/omacom/omarchy/pull/5058",
+    "compareUrl": "https://github.com/omacom/omarchy/compare/ce9b70988ad282c68715ef03f188ad29de182544...1801adc1983b06f6ab218f8060e430cb3477d8d0",
+    "date": "2026-09-28T08:29:07Z"
+  },
+  {
+    "id": "83e60b7806b5a639667296c69952d67f7f8971f83cc8a72676dd509372a5d41c",
+    "repo": "omacom/omarchy",
+    "ref": "dev",
+    "channel": "Development",
+    "availability": "branch",
+    "base": "ce9b70988ad282c68715ef03f188ad29de182544",
+    "head": "1801adc1983b06f6ab218f8060e430cb3477d8d0",
+    "pr": null,
+    "commits": [
+      {
+        "sha": "b9ddccfc377abe0b8fc3ff1ee5b31a86bf202d4a",
+        "title": "Add reminder to updates",
+        "message": "Add reminder to updates",
+        "author": "ryanrhughes",
+        "date": "2026-08-12T18:44:15Z",
+        "url": "https://github.com/omacom/omarchy/commit/b9ddccfc377abe0b8fc3ff1ee5b31a86bf202d4a",
+        "files": [
+          {
+            "path": "bin/omarchy-update-perform",
+            "status": "modified",
+            "additions": 5,
+            "deletions": 0,
+            "patch": "@@ -19,6 +19,11 @@ omarchy-hook post-update\n \n omarchy-update-analyze-logs\n \n+# Updates stay on the v3 tag series, so say how to get to Quattro. This has to\n+# come before omarchy-update-restart, which may reboot the moment it is answered.\n+echo\n+echo -e \"\\e[33mYou're still running an older version of Omarchy. To upgrade to Omarchy Quattro, you'll need to run \\e[1momarchy upgrade-to-quattro\\e[0m\\e[33m manually.\\e[0m\"\n+\n omarchy-update-restart\n \n # Re-enable screensaver/sleep after updates"
+          }
+        ]
+      }
+    ],
+    "title": "Add reminder to updates",
+    "url": "https://github.com/omacom/omarchy/commit/b9ddccfc377abe0b8fc3ff1ee5b31a86bf202d4a",
+    "compareUrl": "https://github.com/omacom/omarchy/compare/ce9b70988ad282c68715ef03f188ad29de182544...1801adc1983b06f6ab218f8060e430cb3477d8d0",
+    "date": "2026-08-12T18:44:15Z"
+  }
+]

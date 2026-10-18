@@ -1,0 +1,60 @@
+[
+  {
+    "id": "041a1c25bbf05388eb3a7ba7299ba3f1a5c1f254e0a938a606daf9a4d2c91acb",
+    "summary": "Adds a focus rule for floating JetBrains XWayland popups.",
+    "impact": "",
+    "category": "Apps",
+    "evidence": {
+      "summary": [
+        {
+          "sourceId": "patch:1801adc1983b06f6ab218f8060e430cb3477d8d0:default/hypr/apps/jetbrains.lua",
+          "quote": "xwayland = true, float = true"
+        },
+        {
+          "sourceId": "patch:1801adc1983b06f6ab218f8060e430cb3477d8d0:default/hypr/apps/jetbrains.lua",
+          "quote": "no_initial_focus = true"
+        }
+      ],
+      "impact": []
+    }
+  },
+  {
+    "id": "6ef8ae1688718ebbe7db7d59451c92a1b62b581b766bf68999f19aec1689e17e",
+    "summary": "Moves the update transcript into persistent state, with a fallback for the update that installs the change.",
+    "impact": "The transcript can survive a reboot instead of being lost from /tmp.",
+    "category": "System",
+    "evidence": {
+      "summary": [
+        {
+          "sourceId": "commit:6250d9ae635244cfc64a78c8fd80707c902cfa42",
+          "quote": "Write the update transcript to the persistent path too"
+        },
+        {
+          "sourceId": "commit:6250d9ae635244cfc64a78c8fd80707c902cfa42",
+          "quote": "Fall back to the /tmp transcript when it is the newer of the two."
+        }
+      ],
+      "impact": [
+        {
+          "sourceId": "pr:5058",
+          "quote": "it follows XDG conventions and survives reboots."
+        }
+      ]
+    }
+  },
+  {
+    "id": "83e60b7806b5a639667296c69952d67f7f8971f83cc8a72676dd509372a5d41c",
+    "summary": "Adds an update reminder that moving to Quattro requires running the upgrade command manually.",
+    "impact": "",
+    "category": "System",
+    "evidence": {
+      "summary": [
+        {
+          "sourceId": "patch:b9ddccfc377abe0b8fc3ff1ee5b31a86bf202d4a:bin/omarchy-update-perform",
+          "quote": "To upgrade to Omarchy Quattro, you'll need to run"
+        }
+      ],
+      "impact": []
+    }
+  }
+]
